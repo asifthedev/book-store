@@ -1,15 +1,11 @@
-export interface Book {
-  id: number;
-  title: string;
-  author: string;
+export interface ApiSuccessResponse<T = any> {
+  success: boolean;
+  data: T;
+  message?: string;
 }
 
-export interface ResponseError {
+export interface ApiErrorResponse {
+  success: boolean;
   message: string;
-}
-
-export interface RouteDefination {
-  method: string;
-  path: string;
-  prompt: string;
+  errors?: Array<{ field: string; message: string }>;
 }
