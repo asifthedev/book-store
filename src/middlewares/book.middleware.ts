@@ -2,6 +2,7 @@ import type { Response, Request, NextFunction } from "express";
 import { z, ZodError } from "zod";
 import type { ZodSchema } from "zod";
 import type { ApiErrorResponse } from "../models/types.js";
+import mongoose from "mongoose";
 
 // Logs every request
 export function logger(req: Request, res: Response, next: NextFunction) {
@@ -35,4 +36,22 @@ export function validateBody<T>(schema: ZodSchema<T>) {
       next(error);
     }
   };
+}
+
+export async function idValidator(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction,
+) {
+  const id = req.params.id;
+
+  // If book id is not in a valid MongoDB book id format
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid book ID format: ${id}`,
+    });
+  }
+
+  next();
 }

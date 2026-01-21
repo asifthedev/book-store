@@ -1,11 +1,16 @@
 import express from "express";
 import type { Express, NextFunction, Request, Response } from "express";
-import { logger, validateBody } from "./middlewares/book.middleware.js";
+import {
+  idValidator,
+  logger,
+  validateBody,
+} from "./middlewares/book.middleware.js";
 import connectDB from "./database/connection.js";
 import {
   getAllBooks,
   getBookById,
   addNewBook,
+  deleteBookById,
   // deleteBookById,
 } from "./controllers/books.controllers.js";
 import type { ApiErrorResponse } from "./models/types.js";
@@ -28,7 +33,7 @@ app.get("/api/v1/books/:id", getBookById);
 
 app.post("/api/v1/books", validateBody<Book>(bookSchema), addNewBook);
 
-// app.delete("/books/:id", deleteBookById);
+app.delete("/api/v1/books/:id", idValidator, deleteBookById);
 
 app.use(
   (

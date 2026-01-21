@@ -4,6 +4,7 @@ import type { Request, Response } from "express";
 import bookModel from "../models/book.model.js";
 import mongoose from "mongoose";
 import type { Book, BookDocument } from "../models/book.schemas.js";
+import { timeStamp } from "console";
 // Method: GET, Path: /api/v1/books
 export async function getAllBooks(
   req: Request,
@@ -122,15 +123,37 @@ export async function addNewBook(
 }
 
 // DELETE: /books/:id
-export function deleteBookById(
+export async function deleteBookById(
   req: Request<{ id: string }>,
   res: Response<ApiSuccessResponse | ApiErrorResponse>,
 ) {
-  const id = Number(req.params.id);
-  const bookDocIndex: number = books.findIndex((book) => book.id === id);
-  if (bookDocIndex === -1) {
-    return res.status(404).json({ message: "Not Found!" });
+  try {
+    const id = req.params.id;
+    const bookDoc = await bookModel.findById(id);
+
+    if (!bookDoc) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Book not found!" });
+    }
+
+    const bookDTO = await BookResponseDTO.fromDocument(bookDoc);
+
+    await bookModel.findByIdAndDelete(id);
+
+    res
+      .status(200)
+      .json({ success: true, message: "Book is deleted!", data: bookDTO });
+  } catch (error: any) {
+    console.log(`[deleteBookById()] Error: `, {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+    });
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error. Please try again later.",
+    });
   }
-  books.splice(bookDocIndex, 1);
-  res.status(200).json({});
 }
